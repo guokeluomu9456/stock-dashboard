@@ -131,6 +131,16 @@ def calc_bollinger(series: pd.Series, window: int = 20, num_std: float = 2.0):
     lower = ma - num_std * std
     return upper, ma, lower
 
+def calc_rsi(close: pd.Series, window: int = 14) -> pd.Series:
+    delta = close.diff()
+    gain = delta.where(delta > 0, 0.0)
+    loss = (-delta).where(delta < 0, 0.0)
+    avg_gain = gain.rolling(window=window).mean()
+    avg_loss = loss.rolling(window=window).mean()
+    rs = avg_gain / (avg_loss + 1e-9)
+    rsi = 100 - (100 / (1 + rs))
+    return rsi
+
 # ======================
 # Plot
 # ======================
@@ -157,6 +167,17 @@ def plot_kdj(df: pd.DataFrame, ax):
     ax.legend(loc='upper left')
     ax.grid(True, alpha=0.3)
 
+def plot_rsi(rsi: pd.Series, ax):
+    ax.plot(rsi.index, rsi.values, color='purple', linewidth=1, label='RSI(14)')
+    ax.axhline(y=70, color='red', linestyle='--', linewidth=0.8, label='Overbought (70)')
+    ax.axhline(y=30, color='green', linestyle='--', linewidth=0.8, label='Oversold (30)')
+    ax.fill_between(rsi.index, rsi.values, 70, where=rsi >= 70, color='red', alpha=0.2)
+    ax.fill_between(rsi.index, rsi.values, 30, where=rsi <= 30, color='green', alpha=0.2)
+    ax.set_ylabel('RSI')
+    ax.set_ylim(0, 100)
+    ax.legend(loc='upper left')
+    ax.grid(True, alpha=0.3)
+
 # ======================
 # Streamlit UI
 # ======================
@@ -173,6 +194,7 @@ show_ma = st.sidebar.checkbox("均线 (MA5/10/20)", value=True)
 show_macd = st.sidebar.checkbox("MACD", value=True)
 show_kdj = st.sidebar.checkbox("KDJ", value=True)
 show_bollinger = st.sidebar.checkbox("布林带", value=True)
+show_rsi = st.sidebar.checkbox("RSI", value=True)
 
 if st.sidebar.button("🔍 分析", type="primary"):
     symbol = get_ticker_symbol(symbol_input, market)
@@ -195,7 +217,7 @@ if st.sidebar.button("🔍 分析", type="primary"):
         st.subheader(f"{symbol} 行情 & 技术指标")
 
         # 主图：K线 + 布林带
-        fig, axes = plt.subplots(3, 1, figsize=(14, 12), gridspec_kw={'height_ratios': [3, 1, 1]})
+        fig, axes = plt.subplots(4, 1, figsize=(14, 14), gridspec_kw={'height_ratios': [3, 1, 1, 1]})
 
         # K线
         ax_candle = axes[0]
@@ -244,6 +266,13 @@ if st.sidebar.button("🔍 分析", type="primary"):
             plot_kdj(df, axes[2])
         else:
             axes[2].axis('off')
+
+        # RSI
+        if show_rsi:
+            rsi = calc_rsi(df['Close'])
+            plot_rsi(rsi, axes[3])
+        else:
+            axes[3].axis('off')
 
         plt.tight_layout()
         st.pyplot(fig)
