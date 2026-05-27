@@ -141,6 +141,18 @@ def calc_rsi(close: pd.Series, window: int = 14) -> pd.Series:
     rsi = 100 - (100 / (1 + rs))
     return rsi
 
+def detect_cross(ma_fast: pd.Series, ma_slow: pd.Series):
+    """检测金叉/死叉，返回交叉点索引列表"""
+    crosses = []
+    for i in range(1, len(ma_fast)):
+        prev = ma_fast.iloc[i-1] - ma_slow.iloc[i-1]
+        curr = ma_fast.iloc[i] - ma_slow.iloc[i]
+        if prev < 0 and curr > 0:
+            crosses.append(('gold', ma_fast.index[i]))
+        elif prev > 0 and curr < 0:
+            crosses.append(('death', ma_fast.index[i]))
+    return crosses
+
 # ======================
 # Plot
 # ======================
@@ -239,6 +251,16 @@ if st.sidebar.button("🔍 分析", type="primary"):
             ax_candle.plot(ma5.index, ma5.values, label='MA5', linewidth=0.8)
             ax_candle.plot(ma10.index, ma10.values, label='MA10', linewidth=0.8)
             ax_candle.plot(ma20.index, ma20.values, label='MA20', linewidth=0.8)
+
+        # 金叉/死叉标注
+        if show_ma:
+            crosses = detect_cross(ma5, ma20)
+            for cross_type, date in crosses:
+                price = df.loc[date, 'Close'] if date in df.index else None
+                if price is not None:
+                    color = 'green' if cross_type == 'gold' else 'red'
+                    marker = '^' if cross_type == 'gold' else 'v'
+                    ax_candle.scatter(date, price, color=color, marker=marker, s=100, zorder=5, label=f"{'金叉' if cross_type == 'gold' else '死叉'}")
 
         ax_candle.set_title(f"{symbol} K线走势", fontsize=12)
         ax_candle.legend(loc='upper left')
