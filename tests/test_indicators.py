@@ -1,4 +1,8 @@
 """Test script for CI - verifies all indicators work correctly"""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import yfinance as yf
 from app import calc_ma, calc_macd, calc_kdj, calc_bollinger, calc_rsi, detect_cross
 
