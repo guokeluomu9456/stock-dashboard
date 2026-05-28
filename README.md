@@ -4,7 +4,7 @@
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 [![CI](https://github.com/guokeluomu9456/stock-dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/guokeluomu9456/stock-dashboard/actions)
 
-🛠️ 股票技术分析 Dashboard | Python + Streamlit
+股票技术分析 Dashboard | Python + Streamlit
 
 输入股票代码，自动计算并可视化 MACD、KDJ、布林带、RSI 等常用技术指标，支持 A股、港股、美股。
 
@@ -18,6 +18,25 @@
 - ✅ **金叉/死叉标注** — 自动标注均线交叉信号
 - 🔍 **多市场支持** — A股（沪深）、港股、美股
 - 💾 **数据缓存** — 本地缓存避免重复请求
+
+## 项目结构
+
+```
+stock_dashboard/
+├── src/
+│   ├── __init__.py      # 包初始化
+│   ├── config.py        # 配置常量
+│   ├── data.py          # 数据获取、缓存
+│   ├── indicators.py    # 技术指标计算（向量化）
+│   ├── plot.py          # 绑图逻辑
+│   └── ui.py            # Streamlit UI
+├── tests/
+│   ├── test_indicators.py
+│   └── test_data.py
+├── app.py               # 入口文件
+├── requirements.txt
+└── README.md
+```
 
 ## 快速开始
 
@@ -34,6 +53,13 @@ streamlit run app.py
 ```
 
 然后在浏览器打开 `http://localhost:8501`
+
+## 测试
+
+```bash
+# 运行单元测试
+pytest tests/ -v
+```
 
 ## 支持的股票市场
 
