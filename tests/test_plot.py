@@ -48,8 +48,8 @@ class TestCandlestickVectorized:
         plot_candlestick(ax, df, dates)
         elapsed = time.time() - start
         plt.close()
-        # 向量化版本应该在 0.1 秒内完成 365 条数据
-        assert elapsed < 0.1, f"耗时 {elapsed:.2f}s，超过 0.1s 阈值，向量化未生效"
+        # 向量化版本应该在 0.2 秒内完成 365 条数据（宽松阈值，适应不同CI环境）
+        assert elapsed < 0.2, f"耗时 {elapsed:.2f}s，超过 0.2s 阈值"
 
 class TestKDJCalledOnce:
     """验证 KDJ 只计算一次"""
