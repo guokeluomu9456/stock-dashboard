@@ -48,23 +48,19 @@ def plot_candlestick(
 
 def plot_kdj(
     ax: plt.Axes,
-    high: pd.Series,
-    low: pd.Series,
-    close: pd.Series,
+    K: pd.Series,
+    D: pd.Series,
+    J: pd.Series,
 ) -> None:
     """
     绘制KDJ指标图
 
     Args:
         ax: matplotlib Axes 对象
-        high: 最高价序列
-        low: 最低价序列
-        close: 收盘价序列
+        K: K 序列
+        D: D 序列
+        J: J 序列
     """
-    from .indicators import calc_kdj
-
-    K, D, J = calc_kdj(high, low, close)
-
     ax.plot(K.index, K.values, label="K", color="blue", linewidth=1)
     ax.plot(D.index, D.values, label="D", color="orange", linewidth=1)
     ax.plot(J.index, J.values, label="J", color="purple", linewidth=1)
