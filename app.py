@@ -73,7 +73,7 @@ def get_ticker_symbol(raw: str, market: str) -> str:
         return raw
     # 自动判断深沪
     if raw.startswith('6'):
-        return f"{raw}.SH"
+        return f"{raw}.SS"
     return f"{raw}.SZ"
 
 def fetch_stock_data(symbol: str, period: str = '1y') -> pd.DataFrame | None:
@@ -156,13 +156,18 @@ def detect_cross(ma_fast: pd.Series, ma_slow: pd.Series):
 # ======================
 # Plot
 # ======================
-def plot_candlestick(ax, df: pd.DataFrame):
+def plot_candlestick(ax, df: pd.DataFrame, dates):
     width = 0.6
     for idx, (_, row) in enumerate(df.iterrows()):
         color = 'red' if row['Close'] >= row['Open'] else 'green'
         ax.plot([idx, idx], [row['Low'], row['High']], color=color, linewidth=0.8)
         ax.add_patch(plt.Rectangle((idx - width/2, row['Open']), width, row['Close'] - row['Open'],
                                     facecolor=color, edgecolor=color, linewidth=0.5))
+    # Set date labels — show every ~10 labels to avoid crowding
+    tick_step = max(1, len(dates) // 10)
+    ax.set_xticks(range(0, len(dates), tick_step))
+    ax.set_xticklabels([dates[i].strftime('%Y-%m-%d') for i in range(0, len(dates), tick_step)], rotation=45, ha='right', fontsize=8)
+    ax.set_xlim(-0.5, len(df) - 0.5)
 
 def plot_kdj(df: pd.DataFrame, ax):
     high = df['High']
@@ -233,7 +238,7 @@ if st.sidebar.button("🔍 分析", type="primary"):
 
         # K线
         ax_candle = axes[0]
-        plot_candlestick(ax_candle, df)
+        plot_candlestick(ax_candle, df, df.index)
 
         # 布林带
         if show_bollinger:
@@ -263,9 +268,10 @@ if st.sidebar.button("🔍 分析", type="primary"):
                     ax_candle.scatter(date, price, color=color, marker=marker, s=100, zorder=5, label=f"{'金叉' if cross_type == 'gold' else '死叉'}")
 
         ax_candle.set_title(f"{symbol} K线走势", fontsize=12)
-        ax_candle.legend(loc='upper left')
+        handles, labels = ax_candle.get_legend_handles_labels()
+        by_label = dict(zip(labels, handles))
+        ax_candle.legend(by_label.values(), by_label.keys(), loc='upper left')
         ax_candle.grid(True, alpha=0.3)
-        ax_candle.set_xlim(0, len(df)-1)
 
         # MACD
         if show_macd:
